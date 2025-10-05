@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AndroidNews</string>
+    <string name="title_activity_main_search">MainSearchActivity</string>
 </resources>
