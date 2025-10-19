@@ -46,29 +46,23 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
 @Composable
 fun LogInApp() {
 
 
-    // initialization
     var password by remember { mutableStateOf("")}
     val context = LocalContext.current
 
 
-    // shared preferences
     val prefs = remember { context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)}
     var username by remember { mutableStateOf(prefs.getString("username","") ?: "Enter your username")}
 
 
-    // password length validity
     val validUsername = username.length  >= 5 && !username.contains(" ")
     val validPassword = password.length  >= 8 && !password.contains(" ")
     val fullyValid = validUsername && validPassword
-    // layout
     Column(
         modifier = Modifier.fillMaxSize(),
-        // verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
 
     ) {
@@ -82,17 +76,15 @@ fun LogInApp() {
         Text(text = "Welcome!")
         Spacer(Modifier.height(70.dp))
 
-        //username
+
         OutlinedTextField(
             value = username,
             onValueChange = {newText -> username = newText},
-            //label = { Text("Username") },
-            // singleLine = true
 
             placeholder = {Text("enter username")},
             singleLine = true
         )
-        //password
+
         OutlinedTextField(
             value = password,
             onValueChange = {newText ->password = newText},
@@ -101,7 +93,7 @@ fun LogInApp() {
             visualTransformation = PasswordVisualTransformation()
 
         )
-        //button
+
         Button(onClick = {
             prefs.edit{ putString("username", username)}
             val intent = Intent(context, MainSearchActivity::class.java)
@@ -112,10 +104,7 @@ fun LogInApp() {
         {Text("Login")}
     }
 
-
-
 }
-
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

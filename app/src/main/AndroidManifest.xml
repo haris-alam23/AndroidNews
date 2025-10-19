@@ -12,6 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidNews">
         <activity
+            android:name=".TopHeadlinesActivity"
+            android:exported="false"
+            android:label="@string/title_activity_top_headlines"
+            android:theme="@style/Theme.AndroidNews" />
+        <activity
+            android:name=".SourcesActivity"
+            android:exported="false"
+            android:label="@string/title_activity_sources"
+            android:theme="@style/Theme.AndroidNews" />
+        <activity
             android:name=".ui.theme.MainSearchActivity"
             android:exported="false"
             android:label="@string/title_activity_main_search"
