@@ -1,10 +1,8 @@
-package com.example.androidnews.ui.theme
+package com.example.androidnews
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -29,12 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
-import com.example.androidnews.SourcesActivity
-import com.example.androidnews.TopHeadlinesActivity
 import com.example.androidnews.ui.theme.ui.theme.AndroidNewsTheme
 
 class MainSearchActivity : ComponentActivity() {
@@ -128,19 +122,3 @@ fun MainSearch() {
 }
 
 
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AndroidNewsTheme {
-        Greeting("Android")
-    }
-}

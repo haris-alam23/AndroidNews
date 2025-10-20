@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -22,7 +23,7 @@
             android:label="@string/title_activity_sources"
             android:theme="@style/Theme.AndroidNews" />
         <activity
-            android:name=".ui.theme.MainSearchActivity"
+            android:name=".MainSearchActivity"
             android:exported="false"
             android:label="@string/title_activity_main_search"
             android:theme="@style/Theme.AndroidNews" />

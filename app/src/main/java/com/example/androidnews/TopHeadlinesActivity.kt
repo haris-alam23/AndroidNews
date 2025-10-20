@@ -3,11 +3,14 @@
 package com.example.androidnews
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,8 +19,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +48,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import com.example.androidnews.ui.theme.AndroidNewsTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import coil.compose.AsyncImage
+
+
 
 class TopHeadlinesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,6 +109,7 @@ fun TopHeadlineSearch() {
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
+                        .clickable {true}
                 )
 
                 ExposedDropdownMenu(
@@ -118,11 +132,20 @@ fun TopHeadlineSearch() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                modifier = Modifier.weight(1f)
-            ) {
+            if (categorySelect.isNotEmpty()) {
+                DisplayHeadlines(
+                    category = categorySelect,
+                    page = currentPage,
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                Text(
+                    text = "Please select a category to load headlines",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
 
-                }
+
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -159,19 +182,71 @@ fun TopHeadlineSearch() {
 
 
 @Composable
-fun getTopHeadlines() {
+fun DisplayHeadlines(
+    category:String,
+    page:Int = 1,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val apiKey = BuildConfig.News_API_Key
+    var articleList by remember { mutableStateOf<List<NewsArticle>>(emptyList()) }
+    val manager = remember { NewsManager() }
 
 
+    LaunchedEffect(category, page) {
+        val result = withContext(Dispatchers.IO) {
+            manager.GetTopHeadlines(category,page,apiKey)
+        }
+        articleList = result
+    }
+
+    LazyColumn(modifier = modifier) {
+        //items should be iterating on items not count)
+        items(items = articleList){article: NewsArticle->
+            ArticleCard(
+                article=article,
+                modifier=Modifier.padding(1.dp)
+                )
+            }
+        }
+    }
+
+@Composable
+fun ArticleCard(article: NewsArticle, modifier:Modifier=Modifier){
+    val context = LocalContext.current
+    Card(modifier=Modifier.fillMaxWidth()
+        .padding(1.dp)
+        .clickable(onClick = {
+            val yelpCardIntent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(article.url)
+            }
+            context.startActivity(yelpCardIntent)
+        })
 
 
+    ){
+        Row(modifier=Modifier.padding(2.dp)) {
+            AsyncImage(
+                model = article.urlImage,
+                //painter = painterResource(R.drawable.ic_launcher_background),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(60.dp)
+                    .padding(1.dp)
+            )
+            Spacer(modifier=Modifier.width(5.dp))
+            Column() {
+                Text(article.title)
+                Spacer(modifier=Modifier.width(5.dp))
+                Text(article.source)
+                Spacer(modifier=Modifier.width(5.dp))
+                Text(article.content ?: "No description is available")
+            }
 
-
-
-
-
-
-
+        }
+    }
 }
+
 
 
 
