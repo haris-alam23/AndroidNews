@@ -1,13 +1,12 @@
 package com.example.androidnews
 
 
- import androidx.compose.ui.input.key.Key
  import okhttp3.OkHttpClient
  import okhttp3.Request
  import okhttp3.Response
  import okhttp3.logging.HttpLoggingInterceptor
  import org.json.JSONObject
-
+ import kotlin.math.ceil
 
 
 class NewsManager {
@@ -28,7 +27,7 @@ class NewsManager {
         category: String,
         pageNumber: Int = 1,
         apiKey: String
-    ): List<NewsArticle> {
+    ): Pair<List<NewsArticle>, Int> {
 
         val request = Request.Builder()
             .url("https://newsapi.org/v2/top-headlines?country=us&category=$category&page=$pageNumber&apiKey=$apiKey")
@@ -41,11 +40,18 @@ class NewsManager {
         if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
             val articleList = mutableListOf<NewsArticle>()
             val json = JSONObject(responseBody)
+            var totalPages = 1
+
+
+            val totalResults = json.optInt("totalResults",0)
+
+             totalPages = ceil(totalResults / 20.0).toInt()
             val articles = json.getJSONArray("articles")
             for (i in 0 until articles.length()) {
                 val currentArticle = articles.getJSONObject(i)
                 val title = currentArticle.getString("title")
-                val source = currentArticle.getString("source")
+                val sourceObject = currentArticle.getJSONObject("source")
+                val source = sourceObject.optString("name","Unknown Source")
                 val content = currentArticle.getString("description")
                 val urlImage = currentArticle.getString("urlToImage")
                 val urlArticle = currentArticle.getString("url")
@@ -60,9 +66,9 @@ class NewsManager {
                 articleList.add(article)
             }
 
-            return articleList
+            return Pair(articleList, totalPages)
         } else (
-                return listOf()
+                return Pair(emptyList(),1)
                 )
 
 
