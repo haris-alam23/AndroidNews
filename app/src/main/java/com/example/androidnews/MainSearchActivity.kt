@@ -111,7 +111,8 @@ fun MainSearch() {
 
             Button(
                 onClick = {
-                // tbd
+                    val intent = Intent(context, MapsActivity::class.java)
+                    context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

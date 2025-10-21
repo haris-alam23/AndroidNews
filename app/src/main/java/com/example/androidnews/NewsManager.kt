@@ -171,4 +171,45 @@ class NewsManager {
             return emptyList()
         }
     }
+
+
+    suspend fun GetEverythingTitle(titleTerm: String, apiKey: String): List<NewsArticle> {
+        val url = "https://newsapi.org/v2/everything?qInTitle=${java.net.URLEncoder.encode(titleTerm, "UTF-8")}&language=en&apiKey=$apiKey"
+
+        val request = okhttp3.Request.Builder()
+            .url(url)
+            .header("authorization", "Bearer $apiKey")
+            .get()
+            .build()
+
+        val response = okHttpClient.newCall(request).execute()
+        val body = response.body?.string()
+
+        if (response.isSuccessful && !body.isNullOrEmpty()) {
+            val json = org.json.JSONObject(body)
+            val articleList = mutableListOf<NewsArticle>()
+            val articles = json.optJSONArray("articles") ?: return emptyList()
+
+            for (i in 0 until articles.length()) {
+                val article = articles.getJSONObject(i)
+                val sourceObj = article.optJSONObject("source")
+                val sourceName = sourceObj?.optString("name", "Unknown") ?: "Unknown"
+
+                articleList.add(
+                    NewsArticle(
+                        title = article.optString("title", ""),
+                        source = sourceName,
+                        content = article.optString("description", ""),
+                        urlImage = article.optString("urlToImage", null),
+                        url = article.optString("url", "")
+                    )
+                )
+            }
+
+            return articleList
+        }
+
+        return emptyList()
+    }
+
 }
