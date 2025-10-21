@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,11 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.androidnews.ui.theme.AndroidNewsTheme
-import com.example.androidnews.fakeSources
-import com.example.androidnews.Source
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class SourcesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,9 +57,21 @@ class SourcesActivity : ComponentActivity() {
 fun SourcesScreen(searchTerm: String) {
 
 
-    val categories = listOf("Business", "Technology", "Sports", "Health", "Entertainment", "Science")
+    val categories = listOf("Business", "Entertainment", "General", "Health", "Science", "Sports", "Technology")
     var selectedCategory by remember { mutableStateOf(categories[0]) }
     var expanded by remember { mutableStateOf(false) }
+    val apiKey = BuildConfig.News_API_Key
+    val manager = remember { NewsManager() }
+    var sources by remember { mutableStateOf<List< Source>>(emptyList()) }
+    var isLoading by  remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedCategory) {
+        isLoading = true
+         sources = withContext(Dispatchers.IO) {
+            manager.GetSources(selectedCategory, apiKey)
+        }
+        isLoading = false
+    }
 
     Scaffold(
         topBar = {
@@ -128,7 +140,7 @@ fun SourcesScreen(searchTerm: String) {
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn {
-                items(fakeSources) { source ->
+                items(sources) { source ->
                     SourceItem(source)
                 }
             }
@@ -143,7 +155,10 @@ fun SourcesScreen(searchTerm: String) {
 fun SourceItem(source: Source) {
     Column(modifier = Modifier
         .fillMaxWidth()
-        .padding(8.dp)) {
+        .padding(8.dp)
+
+    ) {
+
         Text(text = source.name, fontWeight = FontWeight.Bold)
         Text(text = source.category)
         Text(text = source.description)
