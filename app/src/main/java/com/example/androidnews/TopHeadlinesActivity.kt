@@ -11,6 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,6 +29,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -91,7 +93,7 @@ fun TopHeadlineSearch() {
                 .padding(16.dp)
         ) {
 
-            // Dropdown for categories
+
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -181,72 +183,99 @@ fun DisplayHeadlines(
     val apiKey = BuildConfig.News_API_Key
     var articleList by remember { mutableStateOf<List<NewsArticle>>(emptyList()) }
     val manager = remember { NewsManager() }
+    var error by remember { mutableStateOf<String?>(null) }
 
 
     LaunchedEffect(category, page) {
-        val (result,totalPages) = withContext(Dispatchers.IO) {
-            manager.GetTopHeadlines(category,page,apiKey)
-        }
-        articleList = result
-        MaxPageUpdate(totalPages)
-    }
 
-    LazyColumn(modifier = modifier) {
-        //items should be iterating on items not count)
-        items(items = articleList){article: NewsArticle->
-            ArticleCard(
-                article=article,
-                modifier=Modifier.padding(1.dp)
-                )
+        try {
+            val (result, totalPages) = withContext(Dispatchers.IO) {
+                manager.GetTopHeadlines(category, page, apiKey)
             }
+            if (result.isEmpty()) {
+                error = "No headlines found for $category"
+            }
+            articleList = result
+            MaxPageUpdate(totalPages)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            error = "Failed to load headlines. Check your connection."
         }
     }
 
-@Composable
-fun ArticleCard(article: NewsArticle, modifier:Modifier=Modifier){
-    val context = LocalContext.current
-    Card(modifier=Modifier.fillMaxWidth()
-        .padding(6.dp)
-        .clickable(onClick = {
-            val yelpCardIntent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse(article.url)
-            }
-
-            context.startActivity(yelpCardIntent)
-        }),
-        elevation = androidx.compose.material3.CardDefaults.cardElevation(4.dp),
-        ){
-        Row(modifier=Modifier.padding(2.dp)) {
-            AsyncImage(
-                model = article.urlImage,
-                //painter = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = article.title,
-                modifier = Modifier
-                    .size(100.dp)
-                    .padding( 10.dp)
-            )
-            Spacer(modifier=Modifier.width(6.dp))
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxWidth()
-
+    when {
+        articleList.isEmpty() && error != null -> {
+            Box(
+                modifier = modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    article.title,
-                    style = androidx.compose.material3.MaterialTheme.typography.titleMedium
-                        )
-                Spacer(modifier=Modifier.width(6.dp))
-                Text(
-                    article.source,
-                    style = androidx.compose.material3.MaterialTheme.typography.titleSmall
+                    text = "No results found.",
+                    style = MaterialTheme.typography.bodyMedium
                 )
-                Spacer(modifier=Modifier.width(6.dp))
-                Text(article.content ?: "No description is available")
             }
+        }
 
+        else -> {
+            LazyColumn(modifier = modifier) {
+
+                items(items = articleList) { article: NewsArticle ->
+                    ArticleCard(
+                        article = article,
+                        modifier = Modifier.padding(1.dp)
+                    )
+                }
+            }
         }
     }
 }
+
+    @Composable
+    fun ArticleCard(article: NewsArticle, modifier: Modifier = Modifier) {
+        val context = LocalContext.current
+        Card(
+            modifier = Modifier.fillMaxWidth()
+                .padding(6.dp)
+                .clickable(onClick = {
+                    val yelpCardIntent = Intent(Intent.ACTION_VIEW).apply {
+                        data = Uri.parse(article.url)
+                    }
+
+                    context.startActivity(yelpCardIntent)
+                }),
+            elevation = androidx.compose.material3.CardDefaults.cardElevation(4.dp),
+        ) {
+            Row(modifier = Modifier.padding(2.dp)) {
+                AsyncImage(
+                    model = article.urlImage,
+                    contentDescription = article.title,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .padding(10.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.fillMaxWidth()
+
+                ) {
+                    Text(
+                        article.title,
+                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        article.source,
+                        style = androidx.compose.material3.MaterialTheme.typography.titleSmall
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(article.content ?: "No description is available")
+                }
+
+            }
+        }
+    }
+
 
 
 

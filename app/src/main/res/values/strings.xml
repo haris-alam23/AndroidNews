@@ -5,4 +5,19 @@
     <string name="title_activity_top_headlines">TopHeadlinesActivity</string>
     <string name="title_activity_results">ResultsActivity</string>
     <string name="title_activity_maps">MapsActivity</string>
+
+    <string name="welcome">Welcome!</string>
+    <string name="username">Enter username</string>
+    <string name="password">Enter password</string>
+    <string name="login">Login</string>
+
+    <string name="top_bar">Android News Home</string>
+    <string name="search_term">Enter search term</string>
+    <string name="top_headlines">Top Headlines</string>
+
+    <string name="news_sources">Select News Sources</string>
+    <string name="available_sources">Available Sources</string>
+
+    <string name="local_news_map">Local News Map</string>
+
 </resources>

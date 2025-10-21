@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.androidnews.ui.theme.ui.theme.AndroidNewsTheme
@@ -54,7 +55,7 @@ fun MainSearch() {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Android News Home") }
+                title = { Text(text = stringResource(R.string.top_bar)) }
             )
         }
     ) { padding ->
@@ -69,7 +70,7 @@ fun MainSearch() {
             OutlinedTextField(
                 value = searchTerm,
                 onValueChange = { newText: String -> searchTerm = newText },
-                label = { Text("Enter search term") },
+                label = { Text(text = stringResource(R.string.search_term)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )

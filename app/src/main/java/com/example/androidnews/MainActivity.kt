@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,7 +69,7 @@ fun LogInApp() {
 
 
         Spacer(Modifier.height(70.dp))
-        Text(text = "Welcome!")
+        Text(text = stringResource(R.string.welcome))
         Spacer(Modifier.height(70.dp))
 
 
@@ -76,14 +77,14 @@ fun LogInApp() {
             value = username,
             onValueChange = {newText -> username = newText},
 
-            placeholder = {Text("enter username")},
+            placeholder = {Text(text = stringResource(R.string.username))},
             singleLine = true
         )
 
         OutlinedTextField(
             value = password,
             onValueChange = {newText ->password = newText},
-            label = { Text("Password") },
+            label = { Text(text = stringResource(R.string.password)) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation()
 
@@ -96,7 +97,7 @@ fun LogInApp() {
 
         },
             enabled = fullyValid)
-        {Text("Login")}
+        {Text(text = stringResource(R.string.login))}
     }
 
 }

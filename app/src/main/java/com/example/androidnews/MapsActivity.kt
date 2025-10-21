@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -60,6 +62,7 @@ fun MapsScreen() {
     var addressInfo by remember { mutableStateOf("Long-press to select a location") }
     var articles by remember { mutableStateOf<List<NewsArticle>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
 
     val cameraState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(38.9072, -77.0369), 5f)
@@ -67,31 +70,43 @@ fun MapsScreen() {
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Fetch address + news when marker updates
+
     LaunchedEffect(marker) {
         marker?.let { latLng ->
+            error = null
             addressInfo = "Resolving address..."
-            val resolvedAddress = withContext(Dispatchers.IO) {
-                getAddressGeocodeCurrent(context, latLng)
+
+            try {
+                val resolvedAddress = withContext(Dispatchers.IO) {
+                    getAddressGeocodeCurrent(context, latLng)
+                }
+                addressInfo = resolvedAddress
+
+                isLoading = true
+                articles = withContext(Dispatchers.IO) {
+                    val cleanTerm = resolvedAddress.substringBefore(",").trim()
+                    manager.GetEverythingTitle(cleanTerm, apiKey)
+                }
+                if(articles.isEmpty()) {
+                    error = "No local news found for $resolvedAddress"
+                }
+                prefs.edit()
+                    .putFloat("lat", latLng.latitude.toFloat())
+                    .putFloat("lng", latLng.longitude.toFloat())
+                    .apply()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                error = "Failed to load local news."
+
+            } finally {
+                isLoading = false
             }
-            addressInfo = resolvedAddress
-
-            isLoading = true
-            articles = withContext(Dispatchers.IO) {
-                val cleanTerm = resolvedAddress.substringBefore(",").trim() // take just the first word (e.g. "Washington")
-                manager.GetEverythingTitle(cleanTerm, apiKey)            }
-            isLoading = false
-
-            prefs.edit()
-                .putFloat("lat", latLng.latitude.toFloat())
-                .putFloat("lng", latLng.longitude.toFloat())
-                .apply()
         }
     }
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Local News Map") })
+            TopAppBar(title = { Text(stringResource(R.string.local_news_map)) })
         }
     ) { padding ->
         Box(
@@ -99,7 +114,6 @@ fun MapsScreen() {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Google Map
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraState,
@@ -119,7 +133,6 @@ fun MapsScreen() {
                 }
             }
 
-            // Overlay
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -140,8 +153,16 @@ fun MapsScreen() {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            CircularProgressIndicator()
+                            LinearProgressIndicator()
                         }
+                    }
+
+                    error != null -> {
+                        Text(
+                            text = error ?: "Unknown error",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                     articles.isEmpty() && addressInfo != "Long-press to select a location" -> {
                         Text("No results found.", color = Color.Gray)
