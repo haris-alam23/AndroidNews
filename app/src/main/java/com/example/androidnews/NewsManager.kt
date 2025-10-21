@@ -120,4 +120,55 @@ class NewsManager {
             return emptyList()
         }
     }
+
+
+
+
+    suspend fun GetEverything(searchTerm: String, sourceId: String, apiKey: String): List<NewsArticle> {
+
+        val url = "https://newsapi.org/v2/everything?q=$searchTerm&language=en" +
+                if (!sourceId.isNullOrEmpty() && sourceId != "null") "&sources=$sourceId" else "" +
+                "&apiKey=$apiKey"
+
+        val request = Request.Builder()
+            .url(url)
+            .header("authorization", "Bearer $apiKey")
+            .get()
+            .build()
+
+        val response: Response = okHttpClient.newCall(request).execute()
+        val responseBody = response.body?.string()
+        if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
+            val articleList = mutableListOf<NewsArticle>()
+            val json = JSONObject(responseBody)
+
+
+            val articles = json.getJSONArray("articles") ?: return emptyList()
+            for (i in 0 until articles.length()) {
+                val currentArticle = articles.getJSONObject(i)
+                val title = currentArticle.optString("title", "")
+                val sourceObj = currentArticle.optJSONObject("source")
+                val source = sourceObj?.optString("name","Unknown")?: "Unknown"
+                val description = currentArticle.optString("description","")
+                val image = currentArticle.optString("urlToImage", null)
+                val urlArticle = currentArticle.optString("url", "")
+
+
+
+                val articleItem = NewsArticle(
+                    title = title,
+                    source = source,
+                    content = description,
+                    urlImage = image,
+                    url = urlArticle
+                )
+
+                articleList.add(articleItem)
+            }
+            return articleList
+
+          } else {
+            return emptyList()
+        }
+    }
 }

@@ -1,9 +1,11 @@
 package com.example.androidnews
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.androidnews.ui.theme.AndroidNewsTheme
@@ -64,6 +67,7 @@ fun SourcesScreen(searchTerm: String) {
     val manager = remember { NewsManager() }
     var sources by remember { mutableStateOf<List< Source>>(emptyList()) }
     var isLoading by  remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(selectedCategory) {
         isLoading = true
@@ -123,6 +127,10 @@ fun SourcesScreen(searchTerm: String) {
             // Skip Button
             Button(
                 onClick = {
+                    val intent = Intent(context, ResultsActivity::class.java).apply {
+                        putExtra("search_term", searchTerm)
+                    }
+                    context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -141,7 +149,7 @@ fun SourcesScreen(searchTerm: String) {
 
             LazyColumn {
                 items(sources) { source ->
-                    SourceItem(source)
+                    SourceItem(source, searchTerm = searchTerm)
                 }
             }
 
@@ -152,10 +160,20 @@ fun SourcesScreen(searchTerm: String) {
 }
 
 @Composable
-fun SourceItem(source: Source) {
+fun SourceItem(source: Source, searchTerm: String) {
+    val context = LocalContext.current
+
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(8.dp)
+        .clickable{
+            val intent = Intent(context, ResultsActivity::class.java).apply {
+                putExtra("source_id", source.id)
+                putExtra("source_name", source.name)
+                putExtra("search_term", searchTerm)
+            }
+            context.startActivity(intent)
+        }
 
     ) {
 
