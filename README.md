@@ -1,2 +1,2 @@
 # AndroidNews
-CSCI4237 Project 1
+Android News Aggregator App
